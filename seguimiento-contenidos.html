@@ -1,0 +1,1013 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📊 Seguimiento de Contenidos — Badabun</title>
+<style>
+  :root {
+    --bg: #0f0f13;
+    --surface: #1a1a24;
+    --surface2: #22222f;
+    --border: #2e2e3e;
+    --accent: #6c63ff;
+    --accent2: #ff6584;
+    --green: #22c55e;
+    --yellow: #f59e0b;
+    --red: #ef4444;
+    --blue: #3b82f6;
+    --purple: #a855f7;
+    --text: #e2e8f0;
+    --text2: #94a3b8;
+    --text3: #64748b;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  .header {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    padding: 24px 32px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+  .header-left h1 {
+    font-size: 1.6rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #6c63ff, #ff6584);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .header-left p { color: var(--text2); font-size: 0.85rem; margin-top: 2px; }
+  .today-badge {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 8px 16px;
+    font-size: 0.85rem;
+    color: var(--text2);
+  }
+  .today-badge span { color: var(--accent); font-weight: 600; }
+
+  /* STATS */
+  .stats-bar {
+    display: flex;
+    gap: 12px;
+    padding: 20px 32px;
+    overflow-x: auto;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+  }
+  .stat-card {
+    flex: 0 0 auto;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 20px;
+    min-width: 130px;
+    text-align: center;
+  }
+  .stat-card .num {
+    font-size: 1.8rem;
+    font-weight: 700;
+    line-height: 1;
+  }
+  .stat-card .label { font-size: 0.75rem; color: var(--text2); margin-top: 4px; }
+  .stat-total .num { color: var(--accent); }
+  .stat-pending .num { color: var(--yellow); }
+  .stat-progress .num { color: var(--blue); }
+  .stat-done .num { color: var(--green); }
+  .stat-alert .num { color: var(--red); }
+
+  /* CONTROLS */
+  .controls {
+    padding: 16px 32px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+  .search-box {
+    flex: 1;
+    min-width: 200px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 14px;
+    color: var(--text);
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .search-box:focus { border-color: var(--accent); }
+  .search-box::placeholder { color: var(--text3); }
+  .filter-group { display: flex; gap: 6px; flex-wrap: wrap; }
+  .filter-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 7px 14px;
+    color: var(--text2);
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .filter-btn:hover { border-color: var(--accent); color: var(--text); }
+  .filter-btn.active { background: var(--accent); border-color: var(--accent); color: white; }
+  .view-toggle {
+    display: flex;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .view-btn {
+    padding: 7px 14px;
+    border: none;
+    background: transparent;
+    color: var(--text2);
+    cursor: pointer;
+    font-size: 0.82rem;
+    transition: all 0.2s;
+  }
+  .view-btn.active { background: var(--accent); color: white; }
+
+  /* MAIN CONTENT */
+  .main { padding: 24px 32px; }
+
+  /* CALENDAR VIEW */
+  .calendar-section { display: none; }
+  .calendar-section.visible { display: block; }
+  .month-grid { margin-bottom: 40px; }
+  .month-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--accent);
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .month-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+  .cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    margin-bottom: 8px;
+  }
+  .cal-day-label {
+    text-align: center;
+    font-size: 0.72rem;
+    color: var(--text3);
+    padding: 4px;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+  .cal-day {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    min-height: 70px;
+    padding: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+  }
+  .cal-day:hover { border-color: var(--accent); }
+  .cal-day.empty { background: transparent; border-color: transparent; cursor: default; }
+  .cal-day.has-content { border-color: var(--accent); background: rgba(108,99,255,0.08); }
+  .cal-day.today { border-color: var(--accent2); box-shadow: 0 0 0 1px var(--accent2); }
+  .cal-day .day-num {
+    font-size: 0.78rem;
+    color: var(--text3);
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .cal-day.today .day-num { color: var(--accent2); }
+  .cal-dot {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    margin: 1px;
+  }
+  .dot-pending { background: var(--yellow); }
+  .dot-progress { background: var(--blue); }
+  .dot-done { background: var(--green); }
+  .dot-nl { background: #a855f7; }
+  .dot-pue { background: #06b6d4; }
+  .cal-count {
+    font-size: 0.68rem;
+    color: var(--text3);
+    margin-top: 2px;
+  }
+
+  /* LIST VIEW */
+  .list-section { display: none; }
+  .list-section.visible { display: block; }
+  .month-group { margin-bottom: 32px; }
+  .month-header {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--accent);
+    margin-bottom: 14px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .month-header::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+  .video-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 12px; }
+  .video-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px;
+    transition: all 0.2s;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+  }
+  .video-card:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
+  .video-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+  }
+  .video-card.pending::before { background: var(--yellow); }
+  .video-card.progress::before { background: var(--blue); }
+  .video-card.done::before { background: var(--green); }
+  .video-card.revision::before { background: var(--purple); }
+
+  .card-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .card-id {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    padding: 3px 8px;
+    border-radius: 5px;
+    white-space: nowrap;
+  }
+  .id-prb { background: rgba(6,182,212,0.15); color: #06b6d4; }
+  .id-mktb { background: rgba(168,85,247,0.15); color: #a855f7; }
+  .id-na { background: rgba(100,116,139,0.15); color: var(--text3); }
+
+  .status-badge {
+    font-size: 0.7rem;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+  }
+  .badge-pending { background: rgba(245,158,11,0.15); color: var(--yellow); border: 1px solid rgba(245,158,11,0.3); }
+  .badge-progress { background: rgba(59,130,246,0.15); color: var(--blue); border: 1px solid rgba(59,130,246,0.3); }
+  .badge-done { background: rgba(34,197,94,0.15); color: var(--green); border: 1px solid rgba(34,197,94,0.3); }
+  .badge-revision { background: rgba(168,85,247,0.15); color: var(--purple); border: 1px solid rgba(168,85,247,0.3); }
+
+  .card-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.4;
+    margin-bottom: 8px;
+  }
+  .card-meta {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  .card-date { font-size: 0.76rem; color: var(--text3); }
+  .card-project {
+    font-size: 0.72rem;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 600;
+  }
+  .proj-puebla { background: rgba(6,182,212,0.12); color: #06b6d4; }
+  .proj-nl { background: rgba(168,85,247,0.12); color: #a855f7; }
+
+  .card-views {
+    font-size: 0.78rem;
+    color: var(--text2);
+  }
+  .card-views span { color: var(--green); font-weight: 700; }
+
+  .card-alert {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(239,68,68,0.1);
+    border: 1px solid rgba(239,68,68,0.2);
+    border-radius: 6px;
+    padding: 5px 10px;
+    font-size: 0.74rem;
+    color: #fca5a5;
+    margin-top: 8px;
+  }
+
+  .card-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+  }
+  .action-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 5px 12px;
+    color: var(--text2);
+    font-size: 0.76rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .action-btn:hover { background: var(--accent); border-color: var(--accent); color: white; }
+
+  .card-notes {
+    margin-top: 8px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 0.78rem;
+    color: var(--text3);
+    font-style: italic;
+  }
+
+  /* MODAL */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 100;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px;
+    max-width: 560px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  .modal h2 { font-size: 1.1rem; margin-bottom: 16px; color: var(--accent); }
+  .form-group { margin-bottom: 14px; }
+  .form-group label { display: block; font-size: 0.82rem; color: var(--text2); margin-bottom: 5px; }
+  .form-group select, .form-group textarea, .form-group input {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 12px;
+    color: var(--text);
+    font-size: 0.87rem;
+    outline: none;
+  }
+  .form-group select:focus, .form-group textarea:focus { border-color: var(--accent); }
+  .form-group textarea { resize: vertical; min-height: 80px; font-family: inherit; }
+  .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+  .btn-primary {
+    background: var(--accent);
+    border: none;
+    border-radius: 8px;
+    padding: 9px 20px;
+    color: white;
+    font-size: 0.87rem;
+    cursor: pointer;
+    font-weight: 600;
+  }
+  .btn-secondary {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 9px 20px;
+    color: var(--text2);
+    font-size: 0.87rem;
+    cursor: pointer;
+  }
+
+  /* DAYS ALERT PANEL */
+  .alert-panel {
+    background: rgba(239,68,68,0.06);
+    border: 1px solid rgba(239,68,68,0.2);
+    border-radius: 14px;
+    padding: 18px 20px;
+    margin-bottom: 24px;
+  }
+  .alert-panel h3 { font-size: 0.95rem; color: #fca5a5; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+  .alert-list { display: flex; flex-direction: column; gap: 6px; }
+  .alert-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(0,0,0,0.2);
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 0.83rem;
+  }
+  .alert-days { background: var(--red); color: white; border-radius: 6px; padding: 2px 8px; font-weight: 700; font-size: 0.75rem; white-space: nowrap; }
+  .alert-title { color: var(--text); flex: 1; }
+
+  /* EMPTY STATE */
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text3);
+  }
+  .empty-state .emoji { font-size: 3rem; margin-bottom: 12px; }
+
+  /* RESPONSIVE */
+  @media (max-width: 640px) {
+    .header, .controls, .stats-bar, .main { padding-left: 16px; padding-right: 16px; }
+    .video-cards { grid-template-columns: 1fr; }
+    .cal-grid { grid-template-columns: repeat(7, 1fr); }
+    .cal-day { min-height: 50px; padding: 4px; }
+  }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-left">
+    <h1>📊 Seguimiento de Contenidos</h1>
+    <p>Badabun — Puebla & Nuevo León 2026</p>
+  </div>
+  <div class="today-badge">
+    Hoy: <span id="today-label"></span>
+  </div>
+</div>
+
+<!-- STATS -->
+<div class="stats-bar" id="stats-bar">
+  <div class="stat-card stat-total">
+    <div class="num" id="stat-total">0</div>
+    <div class="label">Total videos</div>
+  </div>
+  <div class="stat-card stat-pending">
+    <div class="num" id="stat-pending">0</div>
+    <div class="label">Pendientes</div>
+  </div>
+  <div class="stat-card stat-progress">
+    <div class="num" id="stat-progress">0</div>
+    <div class="label">En proceso</div>
+  </div>
+  <div class="stat-card stat-done">
+    <div class="num" id="stat-done">0</div>
+    <div class="label">Completados</div>
+  </div>
+  <div class="stat-card stat-alert">
+    <div class="num" id="stat-alert">0</div>
+    <div class="label">Sin atender +7 días</div>
+  </div>
+</div>
+
+<!-- CONTROLS -->
+<div class="controls">
+  <input type="text" class="search-box" id="search-input" placeholder="🔍  Buscar por título, ID o tema...">
+  <div class="filter-group">
+    <button class="filter-btn active" onclick="setFilter('all', this)">Todos</button>
+    <button class="filter-btn" onclick="setFilter('puebla', this)">🏛 Puebla</button>
+    <button class="filter-btn" onclick="setFilter('nl', this)">🦁 Nuevo León</button>
+    <button class="filter-btn" onclick="setFilter('pending', this)">⏳ Pendientes</button>
+    <button class="filter-btn" onclick="setFilter('progress', this)">🔄 En proceso</button>
+    <button class="filter-btn" onclick="setFilter('done', this)">✅ Completados</button>
+  </div>
+  <div class="view-toggle">
+    <button class="view-btn active" onclick="setView('list', this)">☰ Lista</button>
+    <button class="view-btn" onclick="setView('calendar', this)">📅 Calendario</button>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- ALERT PANEL -->
+  <div class="alert-panel" id="alert-panel" style="display:none">
+    <h3>🚨 Contenidos sin atender por más de 7 días</h3>
+    <div class="alert-list" id="alert-list"></div>
+  </div>
+
+  <!-- LIST VIEW -->
+  <div class="list-section visible" id="list-view"></div>
+
+  <!-- CALENDAR VIEW -->
+  <div class="calendar-section" id="calendar-view"></div>
+
+</div>
+
+<!-- MODAL EDITAR -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
+  <div class="modal">
+    <h2>✏️ Actualizar seguimiento</h2>
+    <input type="hidden" id="modal-id">
+    <div class="form-group">
+      <label>Estado actual</label>
+      <select id="modal-status">
+        <option value="pending">⏳ Pendiente</option>
+        <option value="progress">🔄 En proceso</option>
+        <option value="done">✅ Completado</option>
+        <option value="revision">🔍 En revisión</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Fecha de última atención</label>
+      <input type="date" id="modal-date">
+    </div>
+    <div class="form-group">
+      <label>Notas / Comentarios</label>
+      <textarea id="modal-notes" placeholder="Agrega notas de seguimiento..."></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal()">Cancelar</button>
+      <button class="btn-primary" onclick="saveModal()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// DATA — extraída de tus Google Spreadsheets
+// ============================================================
+const RAW_VIDEOS = [
+  // ═══════════════ PUEBLA (Pepe Chedraui Reporte) ═══════════════
+  // Enero 2026
+  { id:"PRB25120486", title:"Se quiso robar un carro, y una cámara captó todo", date:"2026-01-02", project:"puebla", link:"https://www.facebook.com/reel/3743566692617261", views:5190218, type:"video" },
+  { id:"PRB2610011",  title:"Policía de Puebla usa dron para detener delincuentes", date:"2026-01-03", project:"puebla", link:"https://www.facebook.com/reel/1408620260652486", views:3193783, type:"video" },
+  { id:"PRB2610096",  title:"¿Por qué los delincuentes le tienen miedo a estas cámaras?", date:"2026-01-09", project:"puebla", link:"https://www.facebook.com/reel/1374833820789219", views:3836537, type:"video" },
+  { id:"PRB2610121",  title:"¿Qué está pasando en Puebla con la policía?", date:"2026-01-11", project:"puebla", link:"https://www.facebook.com/reel/4562883690605836", views:2113740, type:"video" },
+  { id:"NA-PUE-0109", title:"Así trabaja la policía de Puebla para cuidar a las familias", date:"2026-01-09", project:"puebla", link:"https://www.instagram.com/p/DTUFjNEjRlP/", views:2435890, type:"live" },
+  { id:"PRB2610206",  title:"Quisieron asaltar un OXXO y ahora pasarán años en prisión", date:"2026-01-17", project:"puebla", link:"https://www.facebook.com/reel/24911122905229900", views:4603936, type:"video" },
+  { id:"PRB2610255",  title:"Asaltó un OXXO y el karma fue inmediato", date:"2026-01-22", project:"puebla", link:"https://www.facebook.com/reel/910660291494675", views:4366669, type:"video" },
+  { id:"PRB2610399",  title:"¿Por qué Puebla tiene cada vez más turistas?", date:"2026-01-28", project:"puebla", link:"https://www.facebook.com/reel/1614317672896597", views:1858636, type:"video" },
+  // Febrero 2026
+  { id:"PRB2620006",  title:"Detienen al hombre más peligroso de Puebla Capital", date:"2026-02-04", project:"puebla", link:"https://www.facebook.com/reel/1401954584204572", views:2966178, type:"video" },
+  { id:"NA-PUE-0209", title:"Abuelita de Puebla vende las mejores quesadillas del mundo", date:"2026-02-09", project:"puebla", link:"https://www.facebook.com/100044249118449/videos/1463026715423711", views:223502, type:"live" },
+  { id:"PRB2620071",  title:"En 2026 Puebla se prepara para recibir millones de turistas y nuevas empresas", date:"2026-02-07", project:"puebla", link:"https://www.facebook.com/reel/1987669548555915", views:2339821, type:"video" },
+  { id:"PRB2620204",  title:"¿Por qué cambió tanto Puebla este último año?", date:"2026-02-13", project:"puebla", link:"https://www.facebook.com/reel/885746357433877", views:1165490, type:"video" },
+  { id:"PRB2620341",  title:"Puebla llevaba años así… y nadie hacía nada", date:"2026-02-26", project:"puebla", link:"https://www.facebook.com/reel/1403097411081857", views:1792483, type:"video" },
+  { id:"PRB2620340",  title:"El hombre que está cambiando la historia de Puebla", date:"2026-02-26", project:"puebla", link:"https://www.facebook.com/reel/895647783462291", views:1945650, type:"video" },
+  { id:"NA-PUE-0226", title:"El secreto de Puebla que debes conocer", date:"2026-02-26", project:"puebla", link:"https://www.facebook.com/100044249118449/videos/1438429694342776", views:1890704, type:"live" },
+  // Marzo 2026
+  { id:"NA-PUE-0302", title:"La mujer de Puebla que convirtió 5,000 pesos en un negocio famoso", date:"2026-03-02", project:"puebla", link:"https://www.instagram.com/p/DVbwhVVlQo0/", views:1308031, type:"live" },
+  { id:"NA-PUE-0303", title:"Abuelitos de Puebla necesitan un milagro", date:"2026-03-03", project:"puebla", link:"https://www.facebook.com/100044249118449/videos/901006829485530", views:1235499, type:"live" },
+  { id:"NA-PUE-0305a",title:"¿Vale la pena la torta de 15 pesos de Puebla?", date:"2026-03-05", project:"puebla", link:"https://facebook.com/BadabunOficial/videos/1633086277900774/", views:251232, type:"live" },
+  { id:"NA-PUE-0305b",title:"Violinista poblano sorprende al mundo con su talento", date:"2026-03-05", project:"puebla", link:"https://facebook.com/BadabunOficial/videos/680266178477192/", views:442652, type:"live" },
+  { id:"NA-PUE-0306", title:"Así es un operativo de la policía en vivo", date:"2026-03-06", project:"puebla", link:"https://www.facebook.com/100044249118449/videos/1225530699660837", views:448583, type:"live" },
+  { id:"NA-PUE-0307", title:"¿Vale la pena los tacos de $10 pesos de Puebla?", date:"2026-03-07", project:"puebla", link:"https://www.instagram.com/p/DVtkM9BgEC-/", views:370893, type:"live" },
+  { id:"PRB2630267",  title:"En Puebla, el gobierno llega hasta tu colonia para ayudarte", date:"2026-03-14", project:"puebla", link:"https://www.facebook.com/reel/916734274549909", views:949014, type:"video" },
+  { id:"NA-PUE-0320", title:"Los niños de Puebla que desaparecen cuando nadie los ve", date:"2026-03-20", project:"puebla", link:"https://facebook.com/BadabunOficial/videos/1477678170604707/", views:212644, type:"live" },
+  { id:"PRB2630458",  title:"Detienen a dos peligrosos secuestradores en Puebla", date:"2026-03-24", project:"puebla", link:"https://facebook.com/reel/2836489596698567/", views:1250815, type:"video" },
+  { id:"PRB2630459",  title:"Se hacían pasar por policías de Puebla… pero algo salió mal", date:"2026-03-24", project:"puebla", link:"https://facebook.com/reel/1502310871455057/", views:925978, type:"video" },
+  { id:"NA-PUE-0331a",title:"Europa llegó a Puebla, el festival gratis que debes conocer", date:"2026-03-31", project:"puebla", link:"https://www.instagram.com/reel/DWj6CNzCM62/", views:303028, type:"live" },
+  { id:"NA-PUE-0331b",title:"El lugar en Puebla en donde puedes darle de comer a las jirafas", date:"2026-03-31", project:"puebla", link:"https://www.instagram.com/p/DWkH3NClYaE/", views:96000, type:"live" },
+  { id:"NA-PUE-0331c",title:"Parece África pero es Puebla", date:"2026-03-31", project:"puebla", link:"https://www.facebook.com/100044249118449/videos/872716372494659", views:79400, type:"live" },
+  // Abril 2026
+  { id:"PRB2640060",  title:"Detienen a 2 asaltacombis. La cámara captó todo", date:"2026-04-09", project:"puebla", link:"https://www.facebook.com/reel/1256957353297153", views:1943060, type:"video" },
+  { id:"NA-PUE-0414", title:"Las famosas empanadas gigantes de Puebla", date:"2026-04-14", project:"puebla", link:"https://www.facebook.com/BadabunOficial/videos/1450665560089935/", views:190820, type:"live" },
+  { id:"NA-PUE-0415", title:"Más de 3,000 familias de Puebla serán beneficiadas", date:"2026-04-15", project:"puebla", link:"https://www.facebook.com/100044249118449/videos/1242663100944798", views:494801, type:"live" },
+  { id:"NA-PUE-0421", title:"El secreto del mole poblano por fin salió, y no era lo que pensábamos", date:"2026-04-21", project:"puebla", link:"https://www.facebook.com/BadabunOficial/videos/2759293957770025", views:236594, type:"live" },
+  { id:"NA-PUE-0424", title:"Ningún político había querido pavimentar esta colonia de Puebla en 50 años", date:"2026-04-24", project:"puebla", link:"https://www.instagram.com/reel/DXiMDx9lX7r", views:200226, type:"live" },
+
+  // ═══════════════ NUEVO LEÓN (MKTB) ═══════════════
+  // Febrero 2026 — Samuel García
+  { id:"MKTB2620197", title:"¿Cómo evaluarías el trabajo de Samuel García?", date:"2026-02-10", project:"nl", link:"", views:0, type:"encuesta" },
+  { id:"MKTB2620198", title:"¿Por qué la gente de NL está molesta con el PRI?", date:"2026-02-10", project:"nl", link:"", views:0, type:"encuesta" },
+  { id:"MKTB2620199", title:"¿Qué tarjeta le sacarías a Adrián de la Garza del PRI?", date:"2026-02-10", project:"nl", link:"", views:0, type:"encuesta" },
+  { id:"MKTB2620226", title:"¿Qué mensaje le darías al Gobernador? (Pizarrón ciudadano)", date:"2026-02-11", project:"nl", link:"", views:0, type:"encuesta" },
+  { id:"MKTB2620246", title:"Fuerza Civil — Adiestramiento UCM (Unidad de Control de Multitudes)", date:"2026-02-12", project:"nl", link:"https://www.youtube.com/watch?v=sQ9Qdcv6mmA", views:0, type:"video" },
+  { id:"MKTB2620247", title:"¿Qué calificación le darías al sistema de salud de NL?", date:"2026-02-13", project:"nl", link:"", views:0, type:"encuesta" },
+  { id:"MKTB2620248", title:"Campaña de vacunación NL — Jornada de vacunación", date:"2026-02-13", project:"nl", link:"", views:0, type:"video" },
+  { id:"MKTB2620249", title:"¿Qué calificación le das a la seguridad en NL?", date:"2026-02-13", project:"nl", link:"", views:0, type:"encuesta" },
+  { id:"MKTB2620331", title:"¿Por quién votarías? (Encuesta estadio BBVA)", date:"2026-02-14", project:"nl", link:"", views:0, type:"encuesta" },
+  { id:"MKTB2620332", title:"Hospital de salud mental de Nuevo León", date:"2026-02-15", project:"nl", link:"", views:0, type:"video" },
+  { id:"MKTB2620333", title:"Parque Libertad Topo Chico", date:"2026-02-15", project:"nl", link:"", views:0, type:"video" },
+  { id:"MKTB2620334", title:"Programa de arborización NL", date:"2026-02-16", project:"nl", link:"", views:0, type:"video" },
+  { id:"MKTB2620335", title:"Centro Estatal de Atención Animal", date:"2026-02-16", project:"nl", link:"", views:0, type:"video" },
+  { id:"MKTB2620336", title:"NL contra el cáncer infantil", date:"2026-02-16", project:"nl", link:"", views:0, type:"video" },
+  { id:"MKTB2620337", title:"Secretaría de Educación de NL — 300 Canchas", date:"2026-02-17", project:"nl", link:"", views:0, type:"video" },
+  // Ruth González — NL Senadora
+  { id:"MKTB2620359", title:"Visitando corazones (Senadora Ruth González)", date:"2026-02-18", project:"nl", link:"https://youtu.be/QQyII1gzigc", views:0, type:"video" },
+  { id:"MKTB2620360", title:"Enchúlame La colonia (Senadora Ruth González)", date:"2026-02-18", project:"nl", link:"https://youtu.be/2kp__cEl3dA", views:0, type:"video" },
+  { id:"MKTB2620361", title:"Metro RED — Ruth González", date:"2026-02-19", project:"nl", link:"https://www.youtube.com/watch?v=ToPqjcNjSFA", views:0, type:"video" },
+  { id:"MKTB2620440", title:"Parque Villa de Pozos — Ruth González", date:"2026-02-19", project:"nl", link:"https://www.youtube.com/watch?v=yydCal1z_ZU", views:0, type:"video" },
+  { id:"MKTB2620441", title:"Parque Lineal Providencia — Ruth González", date:"2026-02-19", project:"nl", link:"https://youtu.be/RBBhtPuMT9c", views:0, type:"video" },
+  { id:"MKTB2620442", title:"Programa Manos a la obra — Ruth González", date:"2026-02-19", project:"nl", link:"https://youtu.be/GnAKr60Gq34", views:0, type:"video" },
+  { id:"MKTB2620443", title:"Entrevista a Senadora Ruth González", date:"2026-02-19", project:"nl", link:"https://youtu.be/vhk72kvbMVI", views:0, type:"video" },
+  { id:"MKTB2620444", title:"Entrevista a Rocío — Diseñadora de vestidos nudo", date:"2026-02-19", project:"nl", link:"https://youtu.be/N9X4vm9_naw", views:0, type:"video" },
+  { id:"MKTB2620445", title:"Clínica Rosa — Ruth González", date:"2026-02-19", project:"nl", link:"https://youtu.be/PEbSP45SyEo", views:0, type:"video" },
+  { id:"MKTB2620446", title:"¿Qué hace una Senadora? — Ruth González", date:"2026-02-20", project:"nl", link:"https://www.youtube.com/watch?v=DhAq7SNR-aM", views:0, type:"video" },
+  { id:"MKTB2620447", title:"Puente Río Verde — Ruth González", date:"2026-02-20", project:"nl", link:"https://youtube.com/shorts/guqyyMgu-Gg", views:0, type:"video" },
+  { id:"MKTB2620448", title:"Placas y licencia gratuitos — Ruth González", date:"2026-02-20", project:"nl", link:"https://youtu.be/-fAl-81J7JQ", views:0, type:"video" },
+  { id:"MKTB2620449", title:"Doña Molle con Senadora Ruth González", date:"2026-02-20", project:"nl", link:"https://youtu.be/m9ZBXyvZ1nk", views:0, type:"video" },
+  { id:"MKTB2620450", title:"Vía alterna — Obra terminada (Ruth González)", date:"2026-02-20", project:"nl", link:"https://www.youtube.com/watch?v=7HCc_sekwZ0", views:0, type:"video" },
+  { id:"MKTB2620451", title:"Senadora en la calle — Aspectos", date:"2026-02-20", project:"nl", link:"https://youtube.com/shorts/TFuKI2bGpnI", views:0, type:"video" },
+  { id:"MKTB2620452", title:"Sondeos Ricardo Gallardo", date:"2026-02-20", project:"nl", link:"https://www.youtube.com/watch?v=IQFr-L4ptjc", views:0, type:"video" },
+  { id:"MKTB2620453", title:"Inauguración COBACH con Senadora Ruth González", date:"2026-02-20", project:"nl", link:"https://youtu.be/Jf8xU1igfkA", views:0, type:"video" },
+  { id:"MKTB2620362", title:"Ruth y La China en El Senado", date:"2026-02-21", project:"nl", link:"https://youtu.be/9nV96pZ6xns", views:0, type:"video" },
+  // Marzo 2026 — Pepe Chedraui / Puebla (plan de rodaje)
+  { id:"MKTB2630434", title:"Unidos por ti — Seguridad Puebla municipal", date:"2026-03-01", project:"puebla", link:"", views:0, type:"video" },
+  { id:"PRB2630431",  title:"El Botón que salva vidas en Puebla (DGERI)", date:"2026-03-01", project:"puebla", link:"", views:0, type:"video" },
+  { id:"MKTB2630436", title:"Casos de éxito secuestradores — Municipio de Puebla", date:"2026-03-01", project:"puebla", link:"", views:0, type:"video" },
+  { id:"MKTB2630437", title:"Casos de pseudo policías y asaltantes — Municipio de Puebla", date:"2026-03-01", project:"puebla", link:"", views:0, type:"video" },
+  { id:"MKTB2630457", title:"Academia de la Policía de Puebla — Adiestramiento", date:"2026-03-02", project:"puebla", link:"", views:0, type:"video" },
+];
+
+// ============================================================
+// STATE
+// ============================================================
+const STORAGE_KEY = 'badabun_seguimiento_v2';
+let state = {};
+let currentFilter = 'all';
+let currentView = 'list';
+let searchQuery = '';
+
+function loadState() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) state = JSON.parse(saved);
+  } catch(e) {}
+  // init defaults
+  RAW_VIDEOS.forEach(v => {
+    if (!state[v.id]) {
+      state[v.id] = { status: 'pending', lastAttended: null, notes: '' };
+    }
+  });
+}
+
+function saveState() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+// ============================================================
+// FILTERS
+// ============================================================
+function setFilter(f, el) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  render();
+}
+
+function setView(v, el) {
+  currentView = v;
+  document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('list-view').classList.toggle('visible', v === 'list');
+  document.getElementById('calendar-view').classList.toggle('visible', v === 'calendar');
+  render();
+}
+
+function getFiltered() {
+  return RAW_VIDEOS.filter(v => {
+    const s = state[v.id] || {};
+    if (currentFilter === 'puebla' && v.project !== 'puebla') return false;
+    if (currentFilter === 'nl' && v.project !== 'nl') return false;
+    if (currentFilter === 'pending' && s.status !== 'pending') return false;
+    if (currentFilter === 'progress' && s.status !== 'progress') return false;
+    if (currentFilter === 'done' && s.status !== 'done') return false;
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      if (!v.title.toLowerCase().includes(q) && !v.id.toLowerCase().includes(q)) return false;
+    }
+    return true;
+  });
+}
+
+// ============================================================
+// STATS
+// ============================================================
+function updateStats() {
+  const total = RAW_VIDEOS.length;
+  let pending=0, progress=0, done=0, alert=0;
+  const today = new Date();
+  RAW_VIDEOS.forEach(v => {
+    const s = state[v.id] || {};
+    if (s.status === 'pending') pending++;
+    else if (s.status === 'progress') progress++;
+    else if (s.status === 'done') done++;
+    // days without attention
+    const lastDate = s.lastAttended ? new Date(s.lastAttended) : new Date(v.date);
+    const diff = Math.floor((today - lastDate) / 86400000);
+    if (diff >= 7 && s.status !== 'done') alert++;
+  });
+  document.getElementById('stat-total').textContent = total;
+  document.getElementById('stat-pending').textContent = pending;
+  document.getElementById('stat-progress').textContent = progress;
+  document.getElementById('stat-done').textContent = done;
+  document.getElementById('stat-alert').textContent = alert;
+
+  // Alert panel
+  const alertPanel = document.getElementById('alert-panel');
+  const alertList = document.getElementById('alert-list');
+  const alerts = RAW_VIDEOS
+    .filter(v => {
+      const s = state[v.id] || {};
+      if (s.status === 'done') return false;
+      const lastDate = s.lastAttended ? new Date(s.lastAttended) : new Date(v.date);
+      return Math.floor((today - lastDate) / 86400000) >= 7;
+    })
+    .map(v => {
+      const s = state[v.id] || {};
+      const lastDate = s.lastAttended ? new Date(s.lastAttended) : new Date(v.date);
+      const diff = Math.floor((today - today.setHours(0,0,0,0) >= 0 ? today : today - lastDate) / 86400000);
+      const days = Math.floor((new Date() - lastDate) / 86400000);
+      return { ...v, days };
+    })
+    .sort((a,b) => b.days - a.days)
+    .slice(0,5);
+
+  if (alerts.length > 0) {
+    alertPanel.style.display = 'block';
+    alertList.innerHTML = alerts.map(v => `
+      <div class="alert-item">
+        <span class="alert-days">${v.days} días</span>
+        <span class="alert-title">${v.title}</span>
+        <span style="font-size:0.72rem;color:var(--text3)">${v.id}</span>
+      </div>
+    `).join('');
+  } else {
+    alertPanel.style.display = 'none';
+  }
+}
+
+// ============================================================
+// RENDER LIST
+// ============================================================
+function formatViews(n) {
+  if (!n) return '';
+  if (n >= 1000000) return (n/1000000).toFixed(1) + 'M';
+  if (n >= 1000) return Math.round(n/1000) + 'K';
+  return n.toLocaleString();
+}
+
+function statusLabel(s) {
+  const map = { pending:'⏳ Pendiente', progress:'🔄 En proceso', done:'✅ Completado', revision:'🔍 Revisión' };
+  return map[s] || '⏳ Pendiente';
+}
+
+function daysSinceLabel(v) {
+  const s = state[v.id] || {};
+  const lastDate = s.lastAttended ? new Date(s.lastAttended) : new Date(v.date);
+  const diff = Math.floor((new Date() - lastDate) / 86400000);
+  if (s.status === 'done') return '';
+  if (diff >= 14) return `<div class="card-alert">🚨 Sin atender hace <strong>${diff} días</strong></div>`;
+  if (diff >= 7) return `<div class="card-alert">⚠️ Sin revisar hace <strong>${diff} días</strong></div>`;
+  return '';
+}
+
+function renderCard(v) {
+  const s = state[v.id] || {};
+  const status = s.status || 'pending';
+  const idClass = v.id.startsWith('PRB') ? 'id-prb' : v.id.startsWith('MKTB') ? 'id-mktb' : 'id-na';
+  const projClass = v.project === 'puebla' ? 'proj-puebla' : 'proj-nl';
+  const projLabel = v.project === 'puebla' ? '🏛 Puebla' : '🦁 Nuevo León';
+  const linkBtn = v.link ? `<a class="action-btn" href="${v.link}" target="_blank">🔗 Ver video</a>` : '';
+  const notesHtml = s.notes ? `<div class="card-notes">💬 ${s.notes}</div>` : '';
+  const viewsHtml = v.views > 0 ? `<div class="card-views">👁 <span>${formatViews(v.views)}</span> reproducciones</div>` : '';
+
+  return `<div class="video-card ${status}" onclick="openModal('${v.id}')">
+    <div class="card-top">
+      <span class="card-id ${idClass}">${v.id}</span>
+      <button class="status-badge badge-${status}" onclick="cycleStatus(event,'${v.id}')">${statusLabel(status)}</button>
+    </div>
+    <div class="card-title">${v.title}</div>
+    <div class="card-meta">
+      <span class="card-date">📅 ${formatDate(v.date)}</span>
+      <span class="card-project ${projClass}">${projLabel}</span>
+      <span style="font-size:0.72rem;color:var(--text3)">${typeIcon(v.type)}</span>
+    </div>
+    ${viewsHtml}
+    ${daysSinceLabel(v)}
+    ${notesHtml}
+    <div class="card-actions" onclick="event.stopPropagation()">
+      ${linkBtn}
+      <button class="action-btn" onclick="openModal('${v.id}')">✏️ Actualizar</button>
+    </div>
+  </div>`;
+}
+
+function typeIcon(t) {
+  const map = { video:'🎬 Video', live:'📡 En vivo', encuesta:'📋 Encuesta' };
+  return map[t] || '🎬';
+}
+
+function formatDate(d) {
+  const dt = new Date(d + 'T12:00:00');
+  return dt.toLocaleDateString('es-MX', { day:'numeric', month:'short', year:'numeric' });
+}
+
+function groupByMonth(videos) {
+  const months = {};
+  videos.forEach(v => {
+    const key = v.date.slice(0,7);
+    if (!months[key]) months[key] = [];
+    months[key].push(v);
+  });
+  return months;
+}
+
+function monthLabel(key) {
+  const [y,m] = key.split('-');
+  const names = ['','Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  return `${names[parseInt(m)]} ${y}`;
+}
+
+function renderList() {
+  const filtered = getFiltered();
+  const container = document.getElementById('list-view');
+  if (filtered.length === 0) {
+    container.innerHTML = `<div class="empty-state"><div class="emoji">🔍</div><div>No se encontraron contenidos con ese filtro</div></div>`;
+    return;
+  }
+  const grouped = groupByMonth(filtered);
+  const keys = Object.keys(grouped).sort().reverse();
+  container.innerHTML = keys.map(k => `
+    <div class="month-group">
+      <div class="month-header">${monthLabel(k)} <span style="font-size:0.78rem;font-weight:400;color:var(--text3)">(${grouped[k].length} contenidos)</span></div>
+      <div class="video-cards">${grouped[k].map(renderCard).join('')}</div>
+    </div>
+  `).join('');
+}
+
+// ============================================================
+// RENDER CALENDAR
+// ============================================================
+function renderCalendar() {
+  const filtered = getFiltered();
+  const container = document.getElementById('calendar-view');
+  const grouped = groupByMonth(filtered);
+  const keys = Object.keys(grouped).sort().reverse();
+  const today = new Date();
+  const todayStr = today.toISOString().slice(0,10);
+
+  container.innerHTML = keys.map(k => {
+    const [y,m] = k.split('-').map(Number);
+    const daysInMonth = new Date(y,m,0).getDate();
+    const firstDay = new Date(y,m-1,1).getDay(); // 0=sun
+    const videosByDay = {};
+    grouped[k].forEach(v => {
+      const d = parseInt(v.date.slice(8,10));
+      if (!videosByDay[d]) videosByDay[d] = [];
+      videosByDay[d].push(v);
+    });
+
+    const dayLabels = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'].map(d => `<div class="cal-day-label">${d}</div>`).join('');
+    let cells = Array(firstDay).fill(`<div class="cal-day empty"></div>`);
+    for (let d=1; d<=daysInMonth; d++) {
+      const dateStr = `${k}-${String(d).padStart(2,'0')}`;
+      const vids = videosByDay[d] || [];
+      const isToday = dateStr === todayStr;
+      const dots = vids.map(v => {
+        const s = state[v.id] || {};
+        const st = s.status || 'pending';
+        return `<span class="cal-dot dot-${st}"></span>`;
+      }).join('');
+      const countLabel = vids.length > 0 ? `<div class="cal-count">${vids.length} video${vids.length>1?'s':''}</div>` : '';
+      cells.push(`<div class="cal-day ${vids.length?'has-content':''} ${isToday?'today':''}" onclick="scrollToDay('${dateStr}')">
+        <div class="day-num">${d}</div>
+        <div>${dots}</div>
+        ${countLabel}
+      </div>`);
+    }
+
+    return `<div class="month-grid">
+      <div class="month-title">${monthLabel(k)}</div>
+      <div class="cal-grid">${dayLabels}${cells.join('')}</div>
+    </div>`;
+  }).join('');
+}
+
+function scrollToDay(dateStr) {
+  // Switch to list view and show that date
+  setView('list', document.querySelector('.view-btn'));
+  setTimeout(() => {
+    const cards = document.querySelectorAll('.video-card');
+    // find cards matching that date — could add data-date attributes
+  }, 100);
+}
+
+// ============================================================
+// MODAL
+// ============================================================
+function openModal(id) {
+  const s = state[id] || {};
+  document.getElementById('modal-id').value = id;
+  document.getElementById('modal-status').value = s.status || 'pending';
+  document.getElementById('modal-date').value = s.lastAttended || new Date().toISOString().slice(0,10);
+  document.getElementById('modal-notes').value = s.notes || '';
+  const v = RAW_VIDEOS.find(x => x.id === id);
+  document.querySelector('.modal h2').textContent = `✏️ ${v ? v.title.slice(0,50)+'...' : id}`;
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function closeModal(e) {
+  if (!e || e.target === document.getElementById('modal-overlay')) {
+    document.getElementById('modal-overlay').classList.remove('open');
+  }
+}
+
+function saveModal() {
+  const id = document.getElementById('modal-id').value;
+  const status = document.getElementById('modal-status').value;
+  const date = document.getElementById('modal-date').value;
+  const notes = document.getElementById('modal-notes').value;
+  state[id] = { status, lastAttended: date, notes };
+  saveState();
+  document.getElementById('modal-overlay').classList.remove('open');
+  render();
+}
+
+function cycleStatus(e, id) {
+  e.stopPropagation();
+  const s = state[id] || {};
+  const cycle = { pending:'progress', progress:'done', done:'pending', revision:'pending' };
+  s.status = cycle[s.status || 'pending'] || 'pending';
+  s.lastAttended = new Date().toISOString().slice(0,10);
+  state[id] = s;
+  saveState();
+  render();
+}
+
+// ============================================================
+// MAIN RENDER
+// ============================================================
+function render() {
+  updateStats();
+  if (currentView === 'list') renderList();
+  else renderCalendar();
+}
+
+function init() {
+  loadState();
+  const today = new Date();
+  document.getElementById('today-label').textContent = today.toLocaleDateString('es-MX', {
+    weekday:'long', day:'numeric', month:'long', year:'numeric'
+  });
+  document.getElementById('search-input').addEventListener('input', e => {
+    searchQuery = e.target.value;
+    render();
+  });
+  render();
+}
+
+init();
+</script>
+</body>
+</html>
