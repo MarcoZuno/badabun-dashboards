@@ -739,7 +739,7 @@ async function downloadAllSlides() {
     await new Promise(r => setTimeout(r, 120));
 
     const canvas = await html2canvas(track, {
-      scale: 2,           // 540×540 → 1080×1080
+      scale: 4,           // 540×540 → 2160×2160 (ultra nítido para Instagram)
       useCORS: true,
       allowTaint: true,
       backgroundColor: null,
