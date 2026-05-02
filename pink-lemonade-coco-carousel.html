@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pink Lemonade Coco — Doria Coffee Roasters & Co.</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Inter:wght@200;300;400;500&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+:root {
+  --pink-drink: #e8a8b8;
+  --pink-light: #f5d0da;
+  --bougainvillea: #7b2060;
+  --navy: #072150;
+  --white: #ffffff;
+}
+body {
+  background:#111;
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:flex-start;
+  padding:48px 24px 60px;
+  font-family:'Inter',sans-serif;
+}
+
+/* ══════════════════════
+   SETUP SCREEN
+══════════════════════ */
+#setup-screen {
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:32px;
+  width:100%;
+  max-width:580px;
+}
+.setup-header { text-align:center; }
+.setup-logo {
+  display:flex; align-items:center; gap:10px;
+  justify-content:center;
+  margin-bottom:16px;
+}
+.setup-logo svg { opacity:.7; }
+.setup-title {
+  font-family:'Cormorant Garamond',serif;
+  font-size:42px;
+  font-weight:300;
+  color:#fff;
+  letter-spacing:-1px;
+  line-height:1;
+}
+.setup-title em { font-style:italic; color:var(--pink-light); }
+.setup-sub {
+  font-size:11px;
+  font-weight:300;
+  letter-spacing:2px;
+  text-transform:uppercase;
+  color:rgba(255,255,255,0.3);
+  margin-top:6px;
+}
+.setup-divider {
+  width:100%;
+  height:1px;
+  background:linear-gradient(to right, transparent, rgba(232,168,184,0.3), transparent);
+}
+.setup-instruction {
+  font-size:11px;
+  font-weight:300;
+  letter-spacing:1.5px;
+  text-transform:uppercase;
+  color:rgba(255,255,255,0.3);
+  text-align:center;
+}
+
+/* Photo pickers */
+.photo-slots {
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  width:100%;
+}
+.slot {
+  display:flex;
+  align-items:center;
+  gap:16px;
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:4px;
+  padding:14px 18px;
+  cursor:pointer;
+  transition:all .2s;
+  position:relative;
+  overflow:hidden;
+}
+.slot:hover {
+  background:rgba(232,168,184,0.07);
+  border-color:rgba(232,168,184,0.2);
+}
+.slot.loaded {
+  border-color:rgba(232,168,184,0.4);
+  background:rgba(232,168,184,0.06);
+}
+.slot-preview {
+  width:54px; height:54px;
+  border-radius:3px;
+  object-fit:cover;
+  flex-shrink:0;
+  display:none;
+}
+.slot-preview.visible { display:block; }
+.slot-placeholder {
+  width:54px; height:54px;
+  border-radius:3px;
+  background:rgba(255,255,255,0.05);
+  border:1px dashed rgba(255,255,255,0.15);
+  display:flex; align-items:center; justify-content:center;
+  flex-shrink:0;
+  font-size:18px;
+  color:rgba(255,255,255,0.2);
+  transition:all .2s;
+}
+.slot.loaded .slot-placeholder { display:none; }
+.slot-info { flex:1; }
+.slot-num {
+  font-size:8px;
+  letter-spacing:3px;
+  text-transform:uppercase;
+  color:rgba(255,255,255,0.25);
+  margin-bottom:3px;
+}
+.slot-name {
+  font-size:14px;
+  font-weight:300;
+  color:rgba(255,255,255,0.7);
+}
+.slot.loaded .slot-name { color:var(--pink-light); }
+.slot-status {
+  font-size:9px;
+  letter-spacing:1.5px;
+  text-transform:uppercase;
+  color:rgba(255,255,255,0.2);
+  margin-top:2px;
+}
+.slot.loaded .slot-status { color:rgba(232,168,184,0.6); }
+.slot-check {
+  font-size:16px;
+  color:var(--pink-drink);
+  opacity:0;
+  transition:opacity .2s;
+}
+.slot.loaded .slot-check { opacity:1; }
+input[type="file"] { display:none; }
+
+/* Launch button */
+.launch-btn {
+  width:100%;
+  padding:16px;
+  background:rgba(232,168,184,0.1);
+  border:1px solid rgba(232,168,184,0.25);
+  color:var(--pink-light);
+  font-family:'Inter',sans-serif;
+  font-size:10px;
+  font-weight:300;
+  letter-spacing:3px;
+  text-transform:uppercase;
+  border-radius:3px;
+  cursor:pointer;
+  transition:all .25s;
+  opacity:.4;
+  pointer-events:none;
+}
+.launch-btn.ready { opacity:1; pointer-events:all; }
+.launch-btn.ready:hover {
+  background:rgba(232,168,184,0.2);
+  border-color:rgba(232,168,184,0.5);
+}
+.skip-link {
+  font-size:9px;
+  color:rgba(255,255,255,0.18);
+  letter-spacing:1.5px;
+  text-transform:uppercase;
+  cursor:pointer;
+  text-decoration:none;
+  transition:color .2s;
+}
+.skip-link:hover { color:rgba(255,255,255,0.4); }
+
+/* ══════════════════════
+   CAROUSEL SCREEN
+══════════════════════ */
+#carousel-screen { display:none; flex-direction:column; align-items:center; gap:0; }
+
+.header { display:flex; flex-direction:column; align-items:center; gap:6px; margin-bottom:28px; }
+.header-eyebrow {
+  font-size:9px; font-weight:300; letter-spacing:4px;
+  text-transform:uppercase; color:rgba(255,255,255,0.25);
+}
+.header-brand {
+  font-family:'Cormorant Garamond',serif;
+  font-size:14px; font-weight:300; letter-spacing:3px;
+  color:rgba(255,255,255,0.45); text-transform:uppercase;
+}
+
+.carousel-shell { position:relative; width:540px; }
+.slides-track {
+  width:540px; height:540px;
+  position:relative; border-radius:2px; overflow:hidden;
+}
+.slide {
+  position:absolute; inset:0;
+  opacity:0; transition:opacity .6s cubic-bezier(.4,0,.2,1);
+  pointer-events:none;
+}
+.slide.active { opacity:1; pointer-events:all; }
+
+.slide-bg {
+  position:absolute; inset:0;
+  background-size:cover;
+  background-position:center;
+}
+
+/* Slide overlays */
+.s1 .slide-bg { background-color:#3d0f30; }
+.s1 .slide-bg::after {
+  content:''; position:absolute; inset:0;
+  background:linear-gradient(175deg,
+    rgba(10,4,14,.45) 0%, rgba(60,12,45,.15) 35%,
+    rgba(0,0,0,0) 55%, rgba(5,2,8,.75) 100%);
+}
+.s2 .slide-bg { background-color:#5c1040; }
+.s2 .slide-bg::after {
+  content:''; position:absolute; inset:0;
+  background:linear-gradient(155deg,
+    rgba(5,2,10,.6) 0%, rgba(50,10,38,.2) 40%,
+    rgba(0,0,0,0) 60%, rgba(3,1,6,.65) 100%);
+}
+.s3 .slide-bg { background-color:#a06840; }
+.s3 .slide-bg::after {
+  content:''; position:absolute; inset:0;
+  background:linear-gradient(170deg,
+    rgba(25,15,5,.35) 0%, rgba(0,0,0,0) 45%,
+    rgba(10,5,2,.75) 100%);
+}
+
+/* S1 */
+.s1 .top-bar {
+  position:absolute; top:26px; left:26px; right:26px;
+  display:flex; align-items:center; justify-content:space-between; z-index:10;
+}
+.pill {
+  background:rgba(255,255,255,.1); backdrop-filter:blur(10px);
+  border:1px solid rgba(255,255,255,.18); color:#fff;
+  font-size:9px; font-weight:300; letter-spacing:2.5px;
+  text-transform:uppercase; padding:5px 14px; border-radius:20px;
+}
+.star-svg { width:32px; height:32px; opacity:.85; }
+
+.s1 .bottom {
+  position:absolute; bottom:0; left:0; right:0;
+  padding:0 28px 28px;
+  background:linear-gradient(to top,rgba(8,2,12,.95) 0%,rgba(8,2,12,.6) 40%,transparent 100%);
+  z-index:10;
+}
+.eyebrow-small {
+  font-size:8.5px; font-weight:300; letter-spacing:3px;
+  text-transform:uppercase; color:rgba(232,168,184,.75); margin-bottom:10px;
+}
+.hero-title {
+  font-family:'Cormorant Garamond',serif; font-weight:300;
+  line-height:.9; color:#fff; margin-bottom:8px;
+  font-size:58px; letter-spacing:-2px;
+}
+.hero-title .italic { font-style:italic; color:var(--pink-light); }
+.sub-line {
+  font-size:10.5px; font-weight:200; letter-spacing:1.5px;
+  color:rgba(255,255,255,.45); margin-bottom:20px;
+}
+.bottom-meta { display:flex; align-items:center; justify-content:space-between; }
+.counter { font-size:9px; color:rgba(255,255,255,.22); letter-spacing:1.5px; }
+.swipe {
+  display:flex; align-items:center; gap:8px;
+  color:rgba(255,255,255,.3); font-size:8px; letter-spacing:2px; text-transform:uppercase;
+}
+.swipe-line { width:28px; height:1px; background:rgba(255,255,255,.25); position:relative; }
+.swipe-line::after {
+  content:''; position:absolute; right:-1px; top:-3px;
+  width:6px; height:6px;
+  border-right:1px solid rgba(255,255,255,.25);
+  border-top:1px solid rgba(255,255,255,.25);
+  transform:rotate(45deg);
+}
+
+/* S2 */
+.s2 .content {
+  position:absolute; inset:0;
+  display:flex; flex-direction:column; justify-content:space-between;
+  padding:26px 28px 28px; z-index:10;
+}
+.brand-row { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+.brand-script {
+  font-family:'Cormorant Garamond',serif; font-size:13px;
+  font-weight:300; font-style:italic; color:rgba(255,255,255,.55); letter-spacing:1px;
+}
+.season-chip {
+  background:rgba(232,168,184,.15); border:1px solid rgba(232,168,184,.35);
+  color:var(--pink-drink); font-size:8px; letter-spacing:2px;
+  text-transform:uppercase; padding:4px 11px; border-radius:20px;
+}
+.big-name {
+  font-family:'Cormorant Garamond',serif; font-size:68px;
+  font-weight:300; line-height:.88; letter-spacing:-2px; color:#fff;
+}
+.big-name .pink-italic { font-style:italic; color:var(--pink-light); }
+.product-sub {
+  font-size:10px; font-weight:200; letter-spacing:2.5px;
+  text-transform:uppercase; color:rgba(255,255,255,.4); margin-top:10px;
+}
+.s2 .bottom-info { display:flex; flex-direction:column; gap:12px; }
+.thin-line {
+  width:100%; height:1px;
+  background:linear-gradient(to right,rgba(232,168,184,.5),rgba(255,255,255,.06),transparent);
+}
+.ingr-label {
+  font-size:8px; font-weight:300; letter-spacing:3px;
+  text-transform:uppercase; color:rgba(232,168,184,.65); margin-bottom:7px;
+}
+.pills-row { display:flex; flex-wrap:wrap; gap:5px; }
+.i-pill {
+  background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.11);
+  color:rgba(255,255,255,.7); font-size:9.5px; font-weight:300;
+  letter-spacing:.3px; padding:4px 12px; border-radius:20px;
+}
+.final-row { display:flex; align-items:flex-end; justify-content:space-between; }
+.pide-block { display:flex; flex-direction:column; gap:3px; }
+.pide-tiny {
+  font-size:8px; font-weight:200; letter-spacing:2.5px;
+  text-transform:uppercase; color:rgba(255,255,255,.28);
+}
+.pide-name {
+  font-family:'Cormorant Garamond',serif;
+  font-size:20px; font-style:italic; color:var(--pink-light);
+}
+.loc-block { text-align:right; }
+.loc-text {
+  font-size:9px; font-weight:200; letter-spacing:.8px;
+  line-height:1.7; color:rgba(255,255,255,.28);
+}
+
+/* S3 */
+.s3 .top-badge {
+  position:absolute; top:26px; left:26px; right:26px;
+  display:flex; align-items:center; justify-content:space-between; z-index:11;
+}
+.s3 .content {
+  position:absolute; inset:0; display:flex; flex-direction:column;
+  justify-content:flex-end; padding:28px;
+  background:linear-gradient(to top,rgba(10,5,2,.9) 0%,rgba(10,5,2,.55) 30%,rgba(0,0,0,0) 65%);
+  z-index:10;
+}
+.quote-block { margin-bottom:18px; }
+.quote-text {
+  font-family:'Cormorant Garamond',serif;
+  font-size:32px; font-weight:300; font-style:italic;
+  line-height:1.2; color:#fff; letter-spacing:-.5px; margin-bottom:6px;
+}
+.quote-text em { color:var(--pink-light); }
+.quote-sub { font-size:10px; font-weight:200; letter-spacing:1.5px; color:rgba(255,255,255,.42); }
+.s3 .bottom-row { display:flex; align-items:center; justify-content:space-between; }
+.cta {
+  display:inline-flex; align-items:center; gap:8px;
+  border:1px solid rgba(232,168,184,.45); color:var(--pink-drink);
+  font-size:9px; font-weight:300; letter-spacing:2.5px;
+  text-transform:uppercase; padding:8px 18px; border-radius:2px;
+  cursor:pointer; transition:background .2s;
+}
+.cta:hover { background:rgba(232,168,184,.1); }
+
+/* Progress bar */
+.progress-bar {
+  width:540px; height:2px;
+  background:rgba(255,255,255,.08);
+  border-radius:0 0 2px 2px; overflow:hidden;
+}
+.progress-fill {
+  height:100%;
+  background:linear-gradient(to right,var(--pink-drink),var(--pink-light));
+  transition:width .5s cubic-bezier(.4,0,.2,1);
+  border-radius:0 2px 2px 0;
+}
+
+/* Controls */
+.controls { display:flex; align-items:center; gap:16px; margin-top:22px; }
+.nav-btn {
+  width:36px; height:36px; border-radius:50%;
+  background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.1);
+  color:rgba(255,255,255,.5); font-size:15px; cursor:pointer;
+  display:flex; align-items:center; justify-content:center; transition:all .2s;
+}
+.nav-btn:hover {
+  background:rgba(232,168,184,.15);
+  border-color:rgba(232,168,184,.3); color:var(--pink-light);
+}
+.dots { display:flex; gap:6px; align-items:center; }
+.dot {
+  width:5px; height:5px; border-radius:50%;
+  background:rgba(255,255,255,.18); cursor:pointer; transition:all .35s;
+}
+.dot.active { background:var(--pink-drink); width:20px; border-radius:3px; }
+
+.reset-link {
+  margin-top:20px;
+  display:inline-flex; align-items:center; gap:8px;
+  background:rgba(255,255,255,0.06);
+  border:1px solid rgba(255,255,255,0.12);
+  color:rgba(255,255,255,.5);
+  font-size:9px; letter-spacing:2px; text-transform:uppercase;
+  padding:10px 20px; border-radius:3px;
+  cursor:pointer; transition:all .2s;
+}
+.reset-link:hover {
+  background:rgba(232,168,184,0.1);
+  border-color:rgba(232,168,184,0.3);
+  color:var(--pink-light);
+}
+.footer-note {
+  margin-top:10px; font-size:9px; font-weight:300;
+  color:rgba(255,255,255,.12); letter-spacing:1.5px; text-align:center; line-height:1.8;
+}
+.footer-note span { color:rgba(232,168,184,.3); }
+</style>
+</head>
+<body>
+
+<!-- SETUP SCREEN -->
+<div id="setup-screen">
+  <div class="setup-header">
+    <div class="setup-logo">
+      <svg width="26" height="26" viewBox="0 0 32 32" fill="none">
+        <circle cx="16" cy="16" r="15" stroke="rgba(255,255,255,0.4)" stroke-width="1"/>
+        <path d="M16 5 L17.4 14.6 L27 16 L17.4 17.4 L16 27 L14.6 17.4 L5 16 L14.6 14.6 Z" fill="rgba(255,255,255,0.75)"/>
+      </svg>
+      <span style="font-family:'Cormorant Garamond',serif;font-size:13px;font-weight:300;font-style:italic;color:rgba(255,255,255,.5);letter-spacing:2px;">Doria</span>
+    </div>
+    <h1 class="setup-title"><em>Pink</em> Lemonade Coco</h1>
+    <p class="setup-sub">Propuesta de carrusel · Instagram</p>
+  </div>
+
+  <div class="setup-divider"></div>
+  <p class="setup-instruction">Selecciona las 3 fotos para previsualizar</p>
+
+  <div class="photo-slots">
+    <div class="slot" id="slot-0" onclick="document.getElementById('file-0').click()">
+      <img class="slot-preview" id="preview-0" src="" alt="">
+      <div class="slot-placeholder">+</div>
+      <div class="slot-info">
+        <p class="slot-num">Slide 01</p>
+        <p class="slot-name">Chica con bebida</p>
+        <p class="slot-status" id="status-0">Toca para seleccionar</p>
+      </div>
+      <span class="slot-check">✦</span>
+      <input type="file" id="file-0" accept="image/*" onchange="loadPhoto(0, this)">
+    </div>
+
+    <div class="slot" id="slot-1" onclick="document.getElementById('file-1').click()">
+      <img class="slot-preview" id="preview-1" src="" alt="">
+      <div class="slot-placeholder">+</div>
+      <div class="slot-info">
+        <p class="slot-num">Slide 02</p>
+        <p class="slot-name">Mano con bebida + bougainvillea</p>
+        <p class="slot-status" id="status-1">Toca para seleccionar</p>
+      </div>
+      <span class="slot-check">✦</span>
+      <input type="file" id="file-1" accept="image/*" onchange="loadPhoto(1, this)">
+    </div>
+
+    <div class="slot" id="slot-2" onclick="document.getElementById('file-2').click()">
+      <img class="slot-preview" id="preview-2" src="" alt="">
+      <div class="slot-placeholder">+</div>
+      <div class="slot-info">
+        <p class="slot-num">Slide 03</p>
+        <p class="slot-name">Mesa con bebida y flor</p>
+        <p class="slot-status" id="status-2">Toca para seleccionar</p>
+      </div>
+      <span class="slot-check">✦</span>
+      <input type="file" id="file-2" accept="image/*" onchange="loadPhoto(2, this)">
+    </div>
+  </div>
+
+  <button class="launch-btn" id="launch-btn" onclick="launchCarousel()">Ver carrusel →</button>
+  <a class="skip-link" onclick="launchCarousel(true)">Saltar y ver propuesta sin fotos</a>
+</div>
+
+<!-- CAROUSEL SCREEN -->
+<div id="carousel-screen">
+  <div class="header">
+    <p class="header-eyebrow">Propuesta de contenido · Instagram Carrusel</p>
+    <p class="header-brand">Doria Coffee Roasters & Co.</p>
+  </div>
+
+  <div class="carousel-shell">
+    <div class="slides-track">
+
+      <!-- SLIDE 1 -->
+      <div class="slide s1 active" id="s1">
+        <div class="slide-bg" id="bg-0"></div>
+        <div class="top-bar">
+          <span class="pill">Bebida de temporada</span>
+          <svg class="star-svg" viewBox="0 0 32 32" fill="none">
+            <circle cx="16" cy="16" r="15" stroke="rgba(255,255,255,0.45)" stroke-width="1"/>
+            <path d="M16 5 L17.4 14.6 L27 16 L17.4 17.4 L16 27 L14.6 17.4 L5 16 L14.6 14.6 Z" fill="rgba(255,255,255,0.88)"/>
+          </svg>
+        </div>
+        <div class="bottom">
+          <p class="eyebrow-small">Doria Coffee Roasters & Co.</p>
+          <h1 class="hero-title">
+            <span class="italic">Pink</span><br>Lemonade Coco
+          </h1>
+          <p class="sub-line">Limonada de frambuesa con coco &nbsp;·&nbsp; Solo por temporada</p>
+          <div class="bottom-meta">
+            <span class="counter">01 · 03</span>
+            <div class="swipe"><span>desliza</span><div class="swipe-line"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 2 -->
+      <div class="slide s2" id="s2">
+        <div class="slide-bg" id="bg-1"></div>
+        <div class="content">
+          <div>
+            <div class="brand-row">
+              <span class="brand-script">Doria</span>
+              <span class="season-chip">Temporada 2026</span>
+            </div>
+            <h1 class="big-name">
+              <span class="pink-italic">Pink</span><br>Lemonade Coco
+            </h1>
+            <p class="product-sub">Limonada de frambuesa con coco</p>
+          </div>
+          <div class="bottom-info">
+            <div class="thin-line"></div>
+            <div>
+              <p class="ingr-label">Ingredientes</p>
+              <div class="pills-row">
+                <span class="i-pill">🍋 Limonada</span>
+                <span class="i-pill">🫐 Jarabe natural de frambuesa</span>
+                <span class="i-pill">🥥 Coco rallado</span>
+                <span class="i-pill">✦ Mucho amor</span>
+              </div>
+            </div>
+            <div class="thin-line"></div>
+            <div class="final-row">
+              <div class="pide-block">
+                <span class="pide-tiny">Pídelo como</span>
+                <span class="pide-name">"Pink Lemonade Coco"</span>
+              </div>
+              <div class="loc-block">
+                <p class="loc-text">Playas de Tijuana<br>@doria.cafe</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 3 -->
+      <div class="slide s3" id="s3">
+        <div class="slide-bg" id="bg-2"></div>
+        <div class="top-badge">
+          <span class="pill">@doria.cafe</span>
+          <svg class="star-svg" viewBox="0 0 32 32" fill="none">
+            <circle cx="16" cy="16" r="15" stroke="rgba(255,255,255,0.35)" stroke-width="1"/>
+            <path d="M16 5 L17.4 14.6 L27 16 L17.4 17.4 L16 27 L14.6 17.4 L5 16 L14.6 14.6 Z" fill="rgba(255,255,255,0.75)"/>
+          </svg>
+        </div>
+        <div class="content">
+          <div class="quote-block">
+            <p class="quote-text">Frío, cremoso<br>y con ese <em>toque rosa</em><br>que lo cambia todo.</p>
+            <p class="quote-sub">Solo por temporada · Playas de Tijuana</p>
+          </div>
+          <div class="bottom-row">
+            <div class="cta">Encuéntranos ✦</div>
+            <span class="counter" style="color:rgba(255,255,255,.22);font-size:9px;letter-spacing:1.5px;">03 · 03</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="progress-bar">
+      <div class="progress-fill" id="progress" style="width:33.33%"></div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button class="nav-btn" id="prev">←</button>
+    <div class="dots">
+      <div class="dot active" data-i="0"></div>
+      <div class="dot" data-i="1"></div>
+      <div class="dot" data-i="2"></div>
+    </div>
+    <button class="nav-btn" id="next">→</button>
+  </div>
+
+  <p class="reset-link" onclick="resetSetup()">← cambiar fotos</p>
+  <p class="footer-note"><span>Pink Lemonade Coco · Doria Coffee Roasters & Co.</span></p>
+</div>
+
+<script>
+const photos = [null, null, null];
+
+function loadPhoto(index, input) {
+  if (!input.files[0]) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    photos[index] = e.target.result;
+    const preview = document.getElementById('preview-' + index);
+    preview.src = e.target.result;
+    preview.classList.add('visible');
+    document.getElementById('slot-' + index).classList.add('loaded');
+    document.getElementById('status-' + index).textContent = input.files[0].name;
+    checkReady();
+  };
+  reader.readAsDataURL(input.files[0]);
+}
+
+function checkReady() {
+  if (photos.every(p => p !== null))
+    document.getElementById('launch-btn').classList.add('ready');
+}
+
+function launchCarousel(skip = false) {
+  photos.forEach((dataUrl, i) => {
+    const bg = document.getElementById('bg-' + i);
+    if (dataUrl) {
+      bg.style.backgroundImage = 'url(' + dataUrl + ')';
+      bg.style.backgroundSize = 'cover';
+      bg.style.backgroundPosition = 'center';
+    }
+  });
+  document.getElementById('setup-screen').style.display = 'none';
+  document.getElementById('carousel-screen').style.display = 'flex';
+}
+
+function resetSetup() {
+  photos.fill(null);
+  for (let i = 0; i < 3; i++) {
+    const preview = document.getElementById('preview-' + i);
+    preview.src = '';
+    preview.classList.remove('visible');
+    document.getElementById('slot-' + i).classList.remove('loaded');
+    document.getElementById('status-' + i).textContent = 'Toca para seleccionar';
+    document.getElementById('file-' + i).value = '';
+  }
+  document.getElementById('launch-btn').classList.remove('ready');
+  goTo(0);
+  document.getElementById('carousel-screen').style.display = 'none';
+  document.getElementById('setup-screen').style.display = 'flex';
+}
+
+const slides = document.querySelectorAll('.slide');
+const dots   = document.querySelectorAll('.dot');
+const prog   = document.getElementById('progress');
+let cur = 0;
+const total = slides.length;
+
+function goTo(n) {
+  slides[cur].classList.remove('active');
+  dots[cur].classList.remove('active');
+  cur = ((n % total) + total) % total;
+  slides[cur].classList.add('active');
+  dots[cur].classList.add('active');
+  prog.style.width = ((cur + 1) / total * 100) + '%';
+}
+
+document.getElementById('next').addEventListener('click', () => goTo(cur + 1));
+document.getElementById('prev').addEventListener('click', () => goTo(cur - 1));
+dots.forEach(d => d.addEventListener('click', () => goTo(+d.dataset.i)));
+
+let sx = 0;
+document.querySelector('.slides-track').addEventListener('touchstart', e => sx = e.touches[0].clientX, {passive:true});
+document.querySelector('.slides-track').addEventListener('touchend', e => {
+  const dx = sx - e.changedTouches[0].clientX;
+  if (Math.abs(dx) > 40) goTo(dx > 0 ? cur + 1 : cur - 1);
+}, {passive:true});
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight') goTo(cur + 1);
+  if (e.key === 'ArrowLeft')  goTo(cur - 1);
+});
+</script>
+</body>
+</html>
