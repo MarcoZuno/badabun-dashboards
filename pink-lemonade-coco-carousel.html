@@ -410,7 +410,8 @@ input[type="file"] { display:none; }
 .dot.active { background:var(--pink-drink); width:20px; border-radius:3px; }
 
 .download-btn {
-  margin-top:22px;
+  margin-top:24px;
+  margin-bottom:4px;
   display:inline-flex; align-items:center; gap:10px;
   background:linear-gradient(135deg, rgba(232,168,184,0.18), rgba(245,208,218,0.1));
   border:1px solid rgba(232,168,184,0.45);
@@ -613,6 +614,10 @@ input[type="file"] { display:none; }
     </div>
   </div>
 
+  <button class="download-btn" id="download-btn" onclick="downloadAllSlides()">
+    <span id="download-label">↓ Descargar los 3 slides</span>
+  </button>
+
   <div class="controls">
     <button class="nav-btn" id="prev">←</button>
     <div class="dots">
@@ -623,9 +628,6 @@ input[type="file"] { display:none; }
     <button class="nav-btn" id="next">→</button>
   </div>
 
-  <button class="download-btn" id="download-btn" onclick="downloadAllSlides()">
-    <span id="download-label">↓ Descargar los 3 slides</span>
-  </button>
   <p class="reset-link" onclick="resetSetup()">← cambiar fotos</p>
   <p class="footer-note"><span>Pink Lemonade Coco · Doria Coffee Roasters & Co.</span></p>
 </div>
@@ -665,6 +667,7 @@ function launchCarousel(skip = false) {
   });
   document.getElementById('setup-screen').style.display = 'none';
   document.getElementById('carousel-screen').style.display = 'flex';
+  setTimeout(() => document.getElementById('download-btn').scrollIntoView({ behavior: 'smooth', block: 'center' }), 150);
 }
 
 function resetSetup() {
