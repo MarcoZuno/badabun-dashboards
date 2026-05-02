@@ -409,6 +409,26 @@ input[type="file"] { display:none; }
 }
 .dot.active { background:var(--pink-drink); width:20px; border-radius:3px; }
 
+.download-btn {
+  margin-top:22px;
+  display:inline-flex; align-items:center; gap:10px;
+  background:linear-gradient(135deg, rgba(232,168,184,0.18), rgba(245,208,218,0.1));
+  border:1px solid rgba(232,168,184,0.45);
+  color:var(--pink-light);
+  font-family:'Inter',sans-serif;
+  font-size:10px; font-weight:300; letter-spacing:2.5px; text-transform:uppercase;
+  padding:13px 28px; border-radius:3px;
+  cursor:pointer; transition:all .25s;
+}
+.download-btn:hover {
+  background:linear-gradient(135deg, rgba(232,168,184,0.3), rgba(245,208,218,0.18));
+  border-color:rgba(232,168,184,0.7);
+  transform:translateY(-1px);
+}
+.download-btn:disabled {
+  opacity:.5; cursor:not-allowed; transform:none;
+}
+
 .reset-link {
   margin-top:20px;
   display:inline-flex; align-items:center; gap:8px;
@@ -603,10 +623,14 @@ input[type="file"] { display:none; }
     <button class="nav-btn" id="next">→</button>
   </div>
 
+  <button class="download-btn" id="download-btn" onclick="downloadAllSlides()">
+    <span id="download-label">↓ Descargar los 3 slides</span>
+  </button>
   <p class="reset-link" onclick="resetSetup()">← cambiar fotos</p>
   <p class="footer-note"><span>Pink Lemonade Coco · Doria Coffee Roasters & Co.</span></p>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script>
 const photos = [null, null, null];
 
@@ -689,6 +713,57 @@ document.addEventListener('keydown', e => {
   if (e.key === 'ArrowRight') goTo(cur + 1);
   if (e.key === 'ArrowLeft')  goTo(cur - 1);
 });
+
+async function downloadAllSlides() {
+  const btn = document.getElementById('download-btn');
+  const label = document.getElementById('download-label');
+  const track = document.querySelector('.slides-track');
+  const allSlides = document.querySelectorAll('.slide');
+  const savedCur = cur;
+
+  btn.disabled = true;
+
+  for (let i = 0; i < allSlides.length; i++) {
+    label.textContent = `Generando slide ${i + 1} de ${allSlides.length}…`;
+
+    // Make only this slide visible
+    allSlides.forEach((s, idx) => {
+      s.style.opacity = idx === i ? '1' : '0';
+      s.style.pointerEvents = idx === i ? 'all' : 'none';
+    });
+
+    // Wait a frame so CSS renders
+    await new Promise(r => setTimeout(r, 120));
+
+    const canvas = await html2canvas(track, {
+      scale: 2,           // 540×540 → 1080×1080
+      useCORS: true,
+      allowTaint: true,
+      backgroundColor: null,
+      width: 540,
+      height: 540,
+      logging: false
+    });
+
+    const link = document.createElement('a');
+    link.download = `doria-pink-lemonade-coco-slide-0${i + 1}.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+
+    // Small pause between downloads
+    await new Promise(r => setTimeout(r, 300));
+  }
+
+  // Restore original state
+  allSlides.forEach((s, idx) => {
+    s.style.opacity = '';
+    s.style.pointerEvents = '';
+  });
+  goTo(savedCur);
+
+  btn.disabled = false;
+  label.textContent = '↓ Descargar los 3 slides';
+}
 </script>
 </body>
 </html>
